@@ -5,6 +5,7 @@ Personal collection of agent skills for Claude Code (and other agents that read 
 ## Layout
 
 - `skills/` — one directory per skill, each containing a `SKILL.md` (frontmatter with `name` and `description`, then instructions) plus any supporting files or scripts.
+- `archive/skills/` — preserved local skills that are no longer installed.
 - `vendor/mattpocock-skills/` — read-only Git submodule pinned to a published upstream release.
 - `matt-pocock-skills.manifest` — selected upstream categories, pinned and previous commits, and local shadows.
 - `scripts/install.sh` — installs the selected upstream skills, then local skills; a local skill wins when names collide.
@@ -42,7 +43,7 @@ The update records the old pin as `previous_commit`, so status reports upstream 
 Compare a local shadow with the newly pinned upstream version before advancing its manifest baseline:
 
 ```sh
-./scripts/sync-matt.sh diff tdd
+./scripts/sync-matt.sh diff my-customized-skill
 ```
 
 Do not edit files under `vendor/`. To customize an upstream skill, copy its entire directory into `skills/<skill-name>/` and add a `shadow` record to the manifest. The local directory will override upstream during installation.

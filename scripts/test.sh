@@ -9,13 +9,12 @@ trap 'rm -rf "$TEST_HOME"' EXIT
 bash -n "$REPO_ROOT/scripts/install.sh" "$REPO_ROOT/scripts/sync-matt.sh"
 HOME="$TEST_HOME" "$REPO_ROOT/scripts/install.sh"
 "$REPO_ROOT/scripts/sync-matt.sh" status >/dev/null
-"$REPO_ROOT/scripts/sync-matt.sh" diff tdd >/dev/null
 
-local_target="$(readlink "$TEST_HOME/.agents/skills/tdd")"
+upstream_tdd_target="$(readlink "$TEST_HOME/.agents/skills/tdd")"
 upstream_target="$(readlink "$TEST_HOME/.agents/skills/ask-matt")"
 
-[ "$local_target" = "$REPO_ROOT/skills/tdd" ] || {
-  printf 'expected local tdd shadow, got %s\n' "$local_target" >&2
+[ "$upstream_tdd_target" = "$REPO_ROOT/vendor/mattpocock-skills/skills/engineering/tdd" ] || {
+  printf 'expected upstream tdd, got %s\n' "$upstream_tdd_target" >&2
   exit 1
 }
 [ "$upstream_target" = "$REPO_ROOT/vendor/mattpocock-skills/skills/engineering/ask-matt" ] || {
@@ -27,4 +26,4 @@ upstream_target="$(readlink "$TEST_HOME/.agents/skills/ask-matt")"
   exit 1
 }
 
-printf '[test] install precedence and upstream selection passed\n'
+printf '[test] upstream selection and archived local replacement passed\n'

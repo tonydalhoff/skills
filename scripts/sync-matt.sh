@@ -35,7 +35,7 @@ list_skills_at() {
 
 status() {
   local expected_commit previous_commit actual_commit ref category upstream_skill
-  local baseline additions removals
+  local baseline additions removals shadow_count=0
   local upstream_skills=()
 
   require_submodule
@@ -73,6 +73,7 @@ status() {
   printf '[matt-sync] local shadows:\n'
   for upstream_skill in "${upstream_skills[@]}"; do
     [ -f "$REPO_ROOT/skills/$upstream_skill/SKILL.md" ] || continue
+    shadow_count=$((shadow_count + 1))
     baseline="$(awk -F '\t' -v skill="$upstream_skill" '$1 == "shadow" && $2 == skill { print $3; exit }' "$MANIFEST")"
     if [ -z "$baseline" ]; then
       printf '  %s (unrecorded)\n' "$upstream_skill"
@@ -82,6 +83,9 @@ status() {
       printf '  %s (review needed; baseline is %s)\n' "$upstream_skill" "$baseline"
     fi
   done
+  if [ "$shadow_count" -eq 0 ]; then
+    printf '  none\n'
+  fi
 }
 
 diff_shadow() {
