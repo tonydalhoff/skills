@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Symlinks every skill directory in this repo's skills/ into ~/.claude/skills
-# and ~/.agents/skills, so ~/dev/skills is the single source of truth.
+# Symlinks local skills and selected vendored skills into ~/.claude/skills and
+# ~/.agents/skills. Local skills take precedence when names collide.
 # A pre-existing real directory at a link destination is backed up first.
 #
 # Usage: ./scripts/install.sh
@@ -10,6 +10,8 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SKILLS_DIR="$REPO_ROOT/skills"
+UPSTREAM_DIR="$REPO_ROOT/vendor/mattpocock-skills"
+UPSTREAM_MANIFEST="$REPO_ROOT/matt-pocock-skills.manifest"
 TARGETS=("$HOME/.claude/skills" "$HOME/.agents/skills")
 BACKUP_DIR="$REPO_ROOT/.backup/$(date +%Y%m%d-%H%M%S)"
 
@@ -28,9 +30,25 @@ link_skill() {
 
 for target_root in "${TARGETS[@]}"; do
   mkdir -p "$target_root"
+
+  if [ -f "$UPSTREAM_MANIFEST" ]; then
+    if [ ! -f "$UPSTREAM_DIR/.git" ] && [ ! -d "$UPSTREAM_DIR/.git" ]; then
+      log "Vendored skills are not initialized; run: git submodule update --init"
+      exit 1
+    fi
+
+    while IFS= read -r category; do
+      for skill in "$UPSTREAM_DIR/skills/$category"/*/; do
+        [ -f "$skill/SKILL.md" ] || continue
+        skill="${skill%/}"
+        link_skill "$skill" "$target_root/$(basename "$skill")"
+      done
+    done < <(awk -F '\t' '$1 == "include_category" { print $2 }' "$UPSTREAM_MANIFEST")
+  fi
+
   for skill in "$SKILLS_DIR"/*/; do
     skill="${skill%/}"
     link_skill "$skill" "$target_root/$(basename "$skill")"
   done
-  log "Linked $(ls -d "$SKILLS_DIR"/*/ | wc -l | tr -d ' ') skills into $target_root"
+  log "Linked selected skills into $target_root"
 done

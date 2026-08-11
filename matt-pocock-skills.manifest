@@ -1,0 +1,27 @@
+# Tab-separated vendoring metadata. Managed by scripts/sync-matt.sh.
+upstream_url	https://github.com/mattpocock/skills.git
+upstream_ref	v1.2.3
+upstream_commit	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+previous_commit	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+include_category	engineering
+include_category	productivity
+include_category	misc
+# shadow <skill> <upstream comparison baseline>
+shadow	codebase-design	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	diagnosing-bugs	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	domain-modeling	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	git-guardrails-claude-code	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	grill-me	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	grill-with-docs	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	grilling	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	handoff	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	implement	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	improve-codebase-architecture	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	migrate-to-shoehorn	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	prototype	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	resolving-merge-conflicts	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	scaffold-exercises	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	setup-matt-pocock-skills	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	setup-pre-commit	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	tdd	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
+shadow	teach	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
