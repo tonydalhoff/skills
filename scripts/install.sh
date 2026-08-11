@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 #
-# Symlinks every skill directory in this repo into ~/.claude/skills and
-# ~/.agents/skills, so ~/dev/skills is the single source of truth.
+# Symlinks every skill directory in this repo's skills/ into ~/.claude/skills
+# and ~/.agents/skills, so ~/dev/skills is the single source of truth.
 # A pre-existing real directory at a link destination is backed up first.
 #
-# Usage: ./install.sh
+# Usage: ./scripts/install.sh
 
 set -euo pipefail
 
-SKILLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SKILLS_DIR="$REPO_ROOT/skills"
 TARGETS=("$HOME/.claude/skills" "$HOME/.agents/skills")
-BACKUP_DIR="$SKILLS_DIR/.backup/$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="$REPO_ROOT/.backup/$(date +%Y%m%d-%H%M%S)"
 
 log() { printf '[skills] %s\n' "$1"; }
 
