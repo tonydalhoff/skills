@@ -38,7 +38,7 @@ git diff --submodule
 ./scripts/test.sh
 ```
 
-The update records the old pin as `previous_commit`, so status reports upstream skill additions and removals. It deliberately does not advance shadow baselines: each local shadow is reported as needing review until its `shadow` record is updated to the new commit.
+The update records the old pin as `previous_commit`, so status reports upstream skill additions and removals. It deliberately does not advance active `shadow` baselines: each local shadow is reported as needing review until its record is updated to the new commit. `archived_shadow` records retain provenance for inactive archived copies and do not affect status or installation.
 
 Compare a local shadow with the newly pinned upstream version before advancing its manifest baseline:
 

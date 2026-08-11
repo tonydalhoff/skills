@@ -28,15 +28,24 @@ link_skill() {
   ln -sfn "$src" "$dest"
 }
 
+if [ -f "$UPSTREAM_MANIFEST" ]; then
+  if [ ! -f "$UPSTREAM_DIR/.git" ] && [ ! -d "$UPSTREAM_DIR/.git" ]; then
+    log "Vendored skills are not initialized; run: git submodule update --init"
+    exit 1
+  fi
+
+  expected_commit="$(awk -F '\t' '$1 == "upstream_commit" { print $2; exit }' "$UPSTREAM_MANIFEST")"
+  actual_commit="$(git -C "$UPSTREAM_DIR" rev-parse HEAD)"
+  if [ "$actual_commit" != "$expected_commit" ]; then
+    log "Vendored checkout does not match manifest pin; run: ./scripts/sync-matt.sh status"
+    exit 1
+  fi
+fi
+
 for target_root in "${TARGETS[@]}"; do
   mkdir -p "$target_root"
 
   if [ -f "$UPSTREAM_MANIFEST" ]; then
-    if [ ! -f "$UPSTREAM_DIR/.git" ] && [ ! -d "$UPSTREAM_DIR/.git" ]; then
-      log "Vendored skills are not initialized; run: git submodule update --init"
-      exit 1
-    fi
-
     while IFS= read -r category; do
       for skill in "$UPSTREAM_DIR/skills/$category"/*/; do
         [ -f "$skill/SKILL.md" ] || continue

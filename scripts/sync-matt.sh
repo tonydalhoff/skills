@@ -34,9 +34,8 @@ list_skills_at() {
 }
 
 status() {
-  local expected_commit previous_commit actual_commit ref category upstream_skill
-  local baseline additions removals shadow_count=0
-  local upstream_skills=()
+  local expected_commit previous_commit actual_commit ref upstream_skill
+  local baseline additions removals shadow_count=0 mismatch=0
 
   require_submodule
   expected_commit="$(manifest_value upstream_commit)"
@@ -47,12 +46,13 @@ status() {
   printf '[matt-sync] pinned: %s (%s)\n' "$ref" "$expected_commit"
   if [ "$actual_commit" != "$expected_commit" ]; then
     printf '[matt-sync] mismatch: submodule is at %s\n' "$actual_commit"
+    mismatch=1
   else
     printf '[matt-sync] submodule matches manifest\n'
   fi
 
-  additions="$(comm -13 <(list_skills_at "$previous_commit") <(list_skills_at "$actual_commit"))"
-  removals="$(comm -23 <(list_skills_at "$previous_commit") <(list_skills_at "$actual_commit"))"
+  additions="$(comm -13 <(list_skills_at "$previous_commit") <(list_skills_at "$expected_commit"))"
+  removals="$(comm -23 <(list_skills_at "$previous_commit") <(list_skills_at "$expected_commit"))"
   if [ -n "$additions" ]; then
     printf '[matt-sync] upstream skills added since previous pin:\n%s\n' "$additions"
   fi
@@ -63,35 +63,32 @@ status() {
     printf '[matt-sync] no upstream skill additions or removals since previous pin\n'
   fi
 
-  while IFS= read -r category; do
-    for upstream_skill in "$UPSTREAM_DIR/skills/$category"/*/; do
-      [ -f "$upstream_skill/SKILL.md" ] || continue
-      upstream_skills+=("$(basename "$upstream_skill")")
-    done
-  done < <(awk -F '\t' '$1 == "include_category" { print $2 }' "$MANIFEST")
-
   printf '[matt-sync] local shadows:\n'
-  for upstream_skill in "${upstream_skills[@]}"; do
+  while IFS= read -r upstream_skill; do
     [ -f "$REPO_ROOT/skills/$upstream_skill/SKILL.md" ] || continue
     shadow_count=$((shadow_count + 1))
     baseline="$(awk -F '\t' -v skill="$upstream_skill" '$1 == "shadow" && $2 == skill { print $3; exit }' "$MANIFEST")"
     if [ -z "$baseline" ]; then
       printf '  %s (unrecorded)\n' "$upstream_skill"
-    elif [ "$baseline" = "$actual_commit" ]; then
+    elif [ "$baseline" = "$expected_commit" ]; then
       printf '  %s (baseline is current pin)\n' "$upstream_skill"
     else
       printf '  %s (review needed; baseline is %s)\n' "$upstream_skill" "$baseline"
     fi
-  done
+  done < <(list_skills_at "$expected_commit")
   if [ "$shadow_count" -eq 0 ]; then
     printf '  none\n'
   fi
+  [ "$mismatch" -eq 0 ]
 }
 
 diff_shadow() {
-  local skill="${1:-}" category upstream_path=""
+  local skill="${1:-}" category upstream_path="" expected_commit actual_commit
 
   [ -n "$skill" ] || die "usage: $0 diff <skill>"
+  expected_commit="$(manifest_value upstream_commit)"
+  actual_commit="$(git -C "$UPSTREAM_DIR" rev-parse HEAD)"
+  [ "$actual_commit" = "$expected_commit" ] || die "submodule checkout does not match manifest pin"
   [ -f "$REPO_ROOT/skills/$skill/SKILL.md" ] || die "no local skill named $skill"
 
   while IFS= read -r category; do
