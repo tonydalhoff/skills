@@ -5,7 +5,7 @@ description: Break a forge design into independently implementable and reviewabl
 
 # Forge Decompose - Unit Decomposition
 
-Stage 5 of the forge pipeline. Read `.forge/<slug>/design.md`; if it is missing, stop and run `forge-design` first.
+Stage 6 of the Forge pipeline. Read `.forge/<slug>/design.md`, `.forge/<slug>/discovery.md`, and `REQUIREMENTS.md` (or the repository's established requirements-document path); if any is missing, stop and run `forge-design` first.
 
 ## Good units
 
@@ -18,6 +18,10 @@ Stage 5 of the forge pipeline. Read `.forge/<slug>/design.md`; if it is missing,
 - Call out high blast radius.
 
 Draft units section by section from the design, then make a fresh completeness pass for missing design elements, hidden dependencies, oversized units, and false independence.
+
+Map every accepted requirement ID to exactly one unit that delivers its normative test. Put the IDs in the unit's acceptance criteria. A requirement may have additional regression tests, but one unit owns making its declared trace pass. Add a final AFK unit that runs the non-progress `check-traces.mjs` gate when no existing unit naturally owns it.
+
+Turn each unresolved or required human discovery task into a `HITL` unit with its owner, completion evidence, and blocking dependencies. Never hide an access request, secret placement, provisioning action, or cutover behind an AFK implementation unit.
 
 Write `.forge/<slug>/units.md`:
 

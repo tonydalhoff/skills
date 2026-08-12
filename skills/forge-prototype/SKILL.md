@@ -1,11 +1,11 @@
 ---
 name: forge-prototype
-description: Build a throwaway proof of concept that tests the riskiest technical assumption in forge requirements using a falsifiable hypothesis, time-box, and evidence-based verdict. Use when a feature or architecture change rests on an unproven technical assumption.
+description: Build a throwaway proof of concept that tests the riskiest technical assumption in a discovery-vetted Forge effort using a falsifiable hypothesis, time-box, and evidence-based verdict. Use after forge-discover when a feature or architecture change rests on an unproven technical assumption.
 ---
 
 # Forge Prototype - Proof of Concept
 
-Stage 2 of the forge pipeline. Read `.forge/<slug>/requirements.md`; if it is missing, stop and run `forge-crystallize` first.
+Stage 3 of the Forge pipeline. Read `.forge/<slug>/brief.md` and `.forge/<slug>/discovery.md`; if either is missing, stop and run its required prior stage. Proceed only when the discovery record's overall verdict is `prototype-ready`.
 
 ## Discipline
 

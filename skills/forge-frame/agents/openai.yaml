@@ -1,0 +1,4 @@
+interface:
+  display_name: "Forge Frame"
+  short_description: "Define the problem before scoping Forge work."
+  default_prompt: "Use $forge-frame to define the problem for this Forge effort."

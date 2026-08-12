@@ -5,7 +5,7 @@ description: Write an Architecture Decision Record that locks in what a forge pr
 
 # Forge Decide - Architecture Decision Record
 
-Stage 3 of the forge pipeline. Read `.forge/<slug>/requirements.md` and `.forge/<slug>/prototype.md`; if either is missing, stop and identify the required prior stage.
+Stage 4 of the Forge pipeline. Read `.forge/<slug>/brief.md`, `.forge/<slug>/discovery.md`, and `.forge/<slug>/prototype.md`; if any is missing, stop and identify the required prior stage.
 
 The ADR is permanent repository documentation, not a file under `.forge/`.
 
