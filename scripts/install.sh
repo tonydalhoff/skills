@@ -28,6 +28,21 @@ link_skill() {
   ln -sfn "$src" "$dest"
 }
 
+# Removes symlinks in $1 that point back into this repo but whose source no
+# longer exists (e.g. a skill that was since removed from skills/ or vendor).
+prune_stale_links() {
+  local target_root="$1" link target
+  for link in "$target_root"/*; do
+    [ -L "$link" ] || continue
+    target="$(readlink "$link")"
+    case "$target" in
+      "$REPO_ROOT"/*)
+        [ -e "$target" ] || { log "Removing stale link $link"; rm "$link"; }
+        ;;
+    esac
+  done
+}
+
 if [ -f "$UPSTREAM_MANIFEST" ]; then
   if [ ! -f "$UPSTREAM_DIR/.git" ] && [ ! -d "$UPSTREAM_DIR/.git" ]; then
     log "Vendored skills are not initialized; run: git submodule update --init"
@@ -44,6 +59,7 @@ fi
 
 for target_root in "${TARGETS[@]}"; do
   mkdir -p "$target_root"
+  prune_stale_links "$target_root"
 
   if [ -f "$UPSTREAM_MANIFEST" ]; then
     while IFS= read -r category; do
