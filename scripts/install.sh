@@ -73,6 +73,10 @@ for target_root in "${TARGETS[@]}"; do
 
   for skill in "$SKILLS_DIR"/*/; do
     skill="${skill%/}"
+    if [ -f "$UPSTREAM_MANIFEST" ] && [ -e "$target_root/$(basename "$skill")" ]; then
+      log "Local skill name collides with vendored skill: $(basename "$skill")"
+      exit 1
+    fi
     link_skill "$skill" "$target_root/$(basename "$skill")"
   done
   log "Linked selected skills into $target_root"

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Forge Discover"
-  short_description: "Vet external dependencies before prototyping."
-  default_prompt: "Use $forge-discover to vet this Forge effort before prototyping."

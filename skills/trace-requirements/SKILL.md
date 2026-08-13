@@ -1,11 +1,15 @@
 ---
 name: trace-requirements
-description: Create and maintain hierarchical requirements documents where every "The application must..." statement traces to a normative test title, and verify requirement-test coverage with a bundled checker script. Use when the user wants a requirements doc, requirements traceability, "trace requirements to tests", coverage of requirements by tests, or to update requirement statuses as decisions land.
+description: Formalize a delivery ticket's decided behaviors in `REQUIREMENTS.md`, trace each to a normative test title, and verify coverage with a bundled checker. Use when a ticket needs durable requirements traceability, when the user asks to trace requirements to tests, or when accepted behavior changes.
 ---
 
 # Trace Requirements
 
-Turn decided design positions into a requirements document where every requirement is a single testable "The application must…" statement traced to a specific test, and every test title is greppable back to its requirement ID.
+Turn a delivery ticket's decided behavior into durable requirements: each is a single testable "The application must…" statement traced to a specific test, and every test title is greppable back to its requirement ID.
+
+## Where it fits
+
+This is a requirements layer over the Matt Pocock delivery flow, not another lifecycle. Use `/grill-with-docs`, optional `/prototype`, `/to-spec`, and `/to-tickets` to discover and slice the work. When a ticket reaches `/implement`/`/tdd`, formalize that ticket's accepted behavior here before its first red test. `/code-review` checks the ticket against its source spec; run this skill's checker with the ticket's tests before the ticket is complete. Use `audit-requirement-traces` after a feature delivery or before release.
 
 **Convention:** the document lives at the repo root as `REQUIREMENTS.md` — same discoverability pattern as `AGENTS.md`/`README.md`, so any tool or agent can find it without being told the path. If a project already has an established path (e.g. `docs/requirements.md`), don't force a move; pass `--doc <path>` to the scripts instead.
 
@@ -23,11 +27,11 @@ The test title is **normative**: when the test is written, it uses that exact st
 
 ## Writing workflow
 
-1. **Mine sources.** Decided positions come from the conversation, `CONTEXT.md`, `docs/adr/`, and linked issues. Only confirmed decisions become accepted requirements; recommendations still awaiting user confirmation get **[PROPOSED]**.
+1. **Start with one ticket.** Mine its accepted behavior from the ticket, its parent spec, the conversation, `CONTEXT.md`, and relevant ADRs. Only confirmed decisions become accepted requirements; recommendations still awaiting user confirmation get **[PROPOSED]**.
 2. **Choose sections** with 2–6 letter mnemonic prefixes (`TRN`, `POOL`, `SCR`…). Use the project's own vocabulary — glossary terms from `CONTEXT.md` when it exists.
 3. **Write statements** per the rules below. Nest refinements one level deep (`SCR-2` → `SCR-2.1`).
 4. **Trace each requirement** to a planned or existing test: file path + exact title beginning with the ID. Pure logic → `tests/unit/`; I/O, auth, endpoints, persistence → `tests/integration/`.
-5. **Surface implied requirements** — validation edges and interactions the conversation implied but never stated (e.g. "a penalty score competes in the N-lowest selection on equal terms"). Flag these to the user explicitly; they are the highest-value lines in the doc.
+5. **Surface implied requirements** — validation edges and interactions the ticket implied but never stated (e.g. "a penalty score competes in the N-lowest selection on equal terms"). Flag these to the user explicitly; they are the highest-value lines in the doc.
 6. **Add an "Out of scope" section** for explicit exclusions, each with status if unconfirmed.
 7. **Run the checker** (below) and offer to wire it into CI.
 

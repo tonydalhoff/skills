@@ -7,7 +7,7 @@ description: Periodic, deep audit of a requirements document produced by the tra
 
 A periodic, heavier companion to the `trace-requirements` skill's everyday gate. That gate is static and fast: it never runs a test, so it can't tell a real test from a skipped stub, and it can't tell whether the *shape* of a requirements document is actually healthy. This skill does both, plus an exploratory pass that neither can do mechanically.
 
-Run this before a release, after a burst of feature work, or when trust in the traceability gate itself needs re-establishing — not on every commit.
+Run this after a feature delivery, before a release, or when trust in the traceability gate itself needs re-establishing — not on every ticket or commit. It follows the Matt Pocock delivery flow; findings become normal follow-up work through its triage/spec/ticket loop.
 
 ## The four phases
 

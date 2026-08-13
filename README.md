@@ -5,11 +5,10 @@ Personal collection of agent skills for Claude Code (and other agents that read 
 ## Layout
 
 - `skills/` — one directory per skill, each containing a `SKILL.md` (frontmatter with `name` and `description`, then instructions) plus any supporting files or scripts.
-- `archive/skills/` — preserved local skills that are no longer installed.
 - `vendor/mattpocock-skills/` — read-only Git submodule pinned to a published upstream release.
-- `matt-pocock-skills.manifest` — selected upstream categories, pinned and previous commits, and local shadows.
-- `scripts/install.sh` — installs the selected upstream skills, then local skills; a local skill wins when names collide.
-- `scripts/sync-matt.sh` — reports upstream/shadow status or updates the submodule to the latest stable release.
+- `matt-pocock-skills.manifest` — selected upstream categories and pinned version metadata.
+- `scripts/install.sh` — installs selected upstream and local skills; names must not collide.
+- `scripts/sync-matt.sh` — reports or updates the submodule to the latest stable release.
 
 ## Install
 
@@ -24,7 +23,7 @@ The vendored `in-progress` category is intentionally excluded. Edit the manifest
 
 ## Updating Matt Pocock's skills
 
-Inspect the current pin and local shadows:
+Inspect the current pin:
 
 ```sh
 ./scripts/sync-matt.sh status
@@ -38,15 +37,7 @@ git diff --submodule
 ./scripts/test.sh
 ```
 
-The update records the old pin as `previous_commit`, so status reports upstream skill additions and removals. It deliberately does not advance active `shadow` baselines: each local shadow is reported as needing review until its record is updated to the new commit. `archived_shadow` records retain provenance for inactive archived copies and do not affect status or installation.
-
-Compare a local shadow with the newly pinned upstream version before advancing its manifest baseline:
-
-```sh
-./scripts/sync-matt.sh diff my-customized-skill
-```
-
-Do not edit files under `vendor/`. To customize an upstream skill, copy its entire directory into `skills/<skill-name>/` and add a `shadow` record to the manifest. The local directory will override upstream during installation.
+The update records the old pin as `previous_commit`, so status reports upstream skill additions and removals. Do not edit files under `vendor/`.
 
 ## Adding a skill
 

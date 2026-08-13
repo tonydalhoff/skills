@@ -34,8 +34,8 @@ list_skills_at() {
 }
 
 status() {
-  local expected_commit previous_commit actual_commit ref upstream_skill
-  local baseline additions removals shadow_count=0 mismatch=0
+  local expected_commit previous_commit actual_commit ref
+  local additions removals mismatch=0
 
   require_submodule
   expected_commit="$(manifest_value upstream_commit)"
@@ -63,43 +63,7 @@ status() {
     printf '[matt-sync] no upstream skill additions or removals since previous pin\n'
   fi
 
-  printf '[matt-sync] local shadows:\n'
-  while IFS= read -r upstream_skill; do
-    [ -f "$REPO_ROOT/skills/$upstream_skill/SKILL.md" ] || continue
-    shadow_count=$((shadow_count + 1))
-    baseline="$(awk -F '\t' -v skill="$upstream_skill" '$1 == "shadow" && $2 == skill { print $3; exit }' "$MANIFEST")"
-    if [ -z "$baseline" ]; then
-      printf '  %s (unrecorded)\n' "$upstream_skill"
-    elif [ "$baseline" = "$expected_commit" ]; then
-      printf '  %s (baseline is current pin)\n' "$upstream_skill"
-    else
-      printf '  %s (review needed; baseline is %s)\n' "$upstream_skill" "$baseline"
-    fi
-  done < <(list_skills_at "$expected_commit")
-  if [ "$shadow_count" -eq 0 ]; then
-    printf '  none\n'
-  fi
   [ "$mismatch" -eq 0 ]
-}
-
-diff_shadow() {
-  local skill="${1:-}" category upstream_path="" expected_commit actual_commit
-
-  [ -n "$skill" ] || die "usage: $0 diff <skill>"
-  expected_commit="$(manifest_value upstream_commit)"
-  actual_commit="$(git -C "$UPSTREAM_DIR" rev-parse HEAD)"
-  [ "$actual_commit" = "$expected_commit" ] || die "submodule checkout does not match manifest pin"
-  [ -f "$REPO_ROOT/skills/$skill/SKILL.md" ] || die "no local skill named $skill"
-
-  while IFS= read -r category; do
-    if [ -f "$UPSTREAM_DIR/skills/$category/$skill/SKILL.md" ]; then
-      upstream_path="$UPSTREAM_DIR/skills/$category/$skill"
-      break
-    fi
-  done < <(awk -F '\t' '$1 == "include_category" { print $2 }' "$MANIFEST")
-
-  [ -n "$upstream_path" ] || die "$skill does not shadow a selected upstream skill"
-  diff -ru "$upstream_path" "$REPO_ROOT/skills/$skill" || [ "$?" -eq 1 ]
 }
 
 update() {
@@ -139,6 +103,5 @@ update() {
 case "${1:-status}" in
   status) status ;;
   update) update ;;
-  diff) require_submodule; diff_shadow "${2:-}" ;;
-  *) die "usage: $0 [status|update|diff <skill>]" ;;
+  *) die "usage: $0 [status|update]" ;;
 esac

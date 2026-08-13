@@ -6,8 +6,7 @@ This repo is a collection of agent skills. It contains no application code.
 
 - `skills/<skill-name>/SKILL.md` — each active local skill lives in its own directory under `skills/`. `SKILL.md` starts with YAML frontmatter (`name`, `description`) followed by the skill's instructions. Supporting files (playbooks, templates, scripts) sit alongside it in the same directory.
 - `vendor/mattpocock-skills/` — pinned, read-only upstream skills. Selection and version metadata live in `matt-pocock-skills.manifest`.
-- `archive/skills/` — preserved local skills that are no longer active or installed.
-- `scripts/install.sh` — symlinks selected vendored skills followed by active local skills into `~/.claude/skills` and `~/.agents/skills`. Local skills take precedence on name collisions.
+- `scripts/install.sh` — symlinks selected vendored and active local skills into `~/.claude/skills` and `~/.agents/skills`. Local skills must use names distinct from vendored skills.
 - `scripts/sync-matt.sh` — reports or updates the pinned Matt Pocock skills release.
 
 ## Conventions
