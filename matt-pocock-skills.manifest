@@ -1,8 +1,0 @@
-# Tab-separated vendoring metadata. Managed by scripts/sync-matt.sh.
-upstream_url	https://github.com/mattpocock/skills.git
-upstream_ref	v1.2.3
-upstream_commit	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
-previous_commit	6acc160e4e0cd062dbbbd7a1b26ae92855edf07e
-include_category	engineering
-include_category	productivity
-include_category	misc
