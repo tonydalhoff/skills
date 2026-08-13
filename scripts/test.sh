@@ -12,6 +12,7 @@ trap cleanup EXIT
 
 bash -n "$REPO_ROOT/scripts/install.sh" "$REPO_ROOT/scripts/sync-matt.sh"
 HOME="$TEST_HOME" "$REPO_ROOT/scripts/install.sh"
+HOME="$TEST_HOME" "$REPO_ROOT/scripts/install.sh"
 "$REPO_ROOT/scripts/sync-matt.sh" status >/dev/null
 
 upstream_tdd_target="$(readlink "$TEST_HOME/.agents/skills/tdd")"

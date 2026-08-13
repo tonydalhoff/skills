@@ -55,6 +55,16 @@ if [ -f "$UPSTREAM_MANIFEST" ]; then
     log "Vendored checkout does not match manifest pin; run: ./scripts/sync-matt.sh status"
     exit 1
   fi
+
+  for skill in "$SKILLS_DIR"/*/; do
+    skill="${skill%/}"
+    while IFS= read -r category; do
+      if [ -f "$UPSTREAM_DIR/skills/$category/$(basename "$skill")/SKILL.md" ]; then
+        log "Local skill name collides with vendored skill: $(basename "$skill")"
+        exit 1
+      fi
+    done < <(awk -F '\t' '$1 == "include_category" { print $2 }' "$UPSTREAM_MANIFEST")
+  done
 fi
 
 for target_root in "${TARGETS[@]}"; do
@@ -73,10 +83,6 @@ for target_root in "${TARGETS[@]}"; do
 
   for skill in "$SKILLS_DIR"/*/; do
     skill="${skill%/}"
-    if [ -f "$UPSTREAM_MANIFEST" ] && [ -e "$target_root/$(basename "$skill")" ]; then
-      log "Local skill name collides with vendored skill: $(basename "$skill")"
-      exit 1
-    fi
     link_skill "$skill" "$target_root/$(basename "$skill")"
   done
   log "Linked selected skills into $target_root"
