@@ -57,12 +57,11 @@ for (const f of files) {
   const rel = relative(root_, f).split(sep).join('/');
   const name = basename(f);
   const isUnderTestsDir = /(^|\/)(__tests?__|tests?|spec|__spec__)\//.test(rel);
-  const isUnderDocsDir = /(^|\/)docs?\//.test(rel);
   const isReadme = /^readme/i.test(name);
 
   if (TEST_NAME_RE.test(name) || (isUnderTestsDir && !DOC_EXT_RE.test(name))) {
     testFiles.push(rel);
-  } else if (isReadme || (DOC_EXT_RE.test(name) && isUnderDocsDir)) {
+  } else if (isReadme || DOC_EXT_RE.test(name)) {
     docFiles.push(rel);
   } else {
     otherFiles.push(rel);

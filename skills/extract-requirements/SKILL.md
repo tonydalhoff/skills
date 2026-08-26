@@ -1,79 +1,92 @@
 ---
 name: extract-requirements
-description: Bootstrap a REQUIREMENTS.md for a repository that doesn't have one yet, reading its tests, documentation, and implementation and drafting normative capability headers.
+description: Bootstrap a REQUIREMENTS.md for a repository that doesn't have one yet, by reading its tests, documentation, and implementation and drafting normative capability headers and requirement statements in the trace-requirements format. Use when a repo needs requirements traceability retrofitted onto existing code, when the user asks to reverse-engineer/extract/derive requirements from a codebase, or to bootstrap a requirements doc from what's already built.
 ---
 
 # Extract Requirements
 
-Use this skill when a repo needs requirements traceability retrofitted into existing code — when the user asks to reverse-engineer requirements.
+Turn an existing, undocumented-in-this-sense codebase into a first-draft `REQUIREMENTS.md`: read its tests, its docs, and its implementation, and write down what the software is already committed to doing, in the same normative "must" statement + trace format that `trace-requirements` uses going forward.
 
-## What It Does
+## Where it fits
 
-Turns an existing, undocumented-in-this-sense codebase into a first-draft `REQUIREMENTS.md`. Read its tests, its docs, and its implementation, and write down what the software already does.
+`trace-requirements` and `audit-requirement-traces` both assume `REQUIREMENTS.md` already exists. This skill is the step before either of them: it produces the first draft for a repo that has none. Once the draft exists, day-to-day work goes back to `trace-requirements`; periodic health checks go to `audit-requirement-traces`.
 
-## Where It Fits
+This is a **bootstrap for a repo with no `REQUIREMENTS.md`** (or an empty stub) only. It does not merge into or extend an existing populated doc — that's a materially different, ID-preserving merge problem. If `REQUIREMENTS.md` already exists and is non-empty, stop and tell the user; don't overwrite it.
 
-**trace-requirements** and **audit-requirement-traces** both assume `REQUIREMENTS.md` already exists. This skill does the step before either of them: it produces the first draft for a repo that has tests, doc, and code but no normative written requirements.
+Everything this skill produces is a draft. It never rewrites test titles, never invents accepted (non-`[PROPOSED]`) requirements, and never silently resolves a disagreement between sources — see [Non-negotiables](#non-negotiables).
 
-This is a shorthand for a repo with no `REQUIREMENTS.md` as an empty stub only. It does not merge into or extend an existing populated doc — that's a materially different, DP-preserving merge problem. If `REQUIREMENTS.md` exists or is an empty stub, it works; it never resolves that disagreement between sources.
+## Source roles
 
-Everything this skill produces is a draft. It never rewrites test titles, never invents scoped (non-PROPOSED) requirements, and never silently resolves a disagreement between sources — it surfaces every finding at the end.
+Three sources, three jobs. Don't blur them — a role mismatch is how the draft ends up mushy.
 
-## Source Roles
+| Source | Primary role | Scope |
+|---|---|---|
+| **Documentation** (`README*`, `docs/**`, ADRs) | Capability / section headers | Curated, current-state docs only. Not inline code comments (implementation's job), not CHANGELOGs (historical, not current capability). |
+| **Tests** | Requirement statements, plus a secondary source of capability headers via suite/`describe`-level groupings | Read for meaning — comprehension, not regex. A test's title is a hint at best; the assertions are the actual requirement. |
+| **Implementation** | Requirement statements only, and a tertiary/fallback source of capability headers | Gap-fill only: behavior with **zero** existing test coverage, scoped to validation and business-rule logic with an observable external effect — not every function. Skip anything already captured from the test pass. |
 
-Three sources, three jobs. Don't blur them — a rule mismatch is how the draft ends up muddily.
+**Capability-header fallback chain:** docs → test suite groupings → implementation structure. Fall back to implementation only when *neither* docs nor test structure reveals a grouping (e.g. a flat test file with no suite nesting, or logic with no tests at all). When deriving from implementation, use judgment — group by module/directory boundaries or by public class/exported-function names, whichever produces a cleaner mnemonic for this codebase. There's no fixed rule here; codebases are organized too differently for one to hold.
 
-**Source | Primary role | Scope**
-
-- **Test files**. Don't blur these — a rule mismatch is how the draft ends up muddly.
-- **Documentation** (readme, ~i.test). These derive the implementation, use judgment — skip anything already captured from the test pass.
-- **Implementation** (~*.{js,ts,go,rs}, etc). This is for the edge case: test title or feature is conspicuously absent, or test coverage is weak. Exercise existing test coverage; skip to validation and business-logic with an observable external effect — not every internal function. Skip anything already captured from the test pass.
+Any capability header that had to come from tests or implementation instead of docs — i.e. nothing documents it — goes in a distinct **"Needs documentation"** list at the end of the draft (see [Output](#output)). Don't fold it silently into the numbered sections; it's an actionable gap, not just another line.
 
 ## Workflow
 
-1. **Check preconditions** — Confirm `REQUIREMENTS.md` (or `—mdc-path`) doesn't already exist with content. If it does, stop.
+1. **Check preconditions.** Confirm `REQUIREMENTS.md` (or `--doc <path>`) doesn't already exist with content. If it does, stop.
 
-2. **Enumerate sources** — Run the bundled script to enumerate every source file without trying to parse them semantically:
+2. **Inventory.** Run the bundled script to enumerate every candidate source file without trying to parse them semantically:
 
-```bash
-node inventory-sources.mjs [path]
-```
+   ```sh
+   node <skill-dir>/scripts/inventory-sources.mjs [path]
+   ```
 
-- `path` defaults to the repo root; pass a subdirectory to scope a run to one module of a large monorepo.
-- Output is JSON; file counts by role (test/doc/other) and an extension breakdown.
+   `path` defaults to the repo root; pass a subdirectory to scope a run to one module of a large monorepo. Output is JSON: file counts by role (test/doc/other) and an extension breakdown of the "other" bucket — a size and shape signal for the next step.
 
-3. **Decide clustering** — Parse that output to decide single-agent vs multi-agent clustering:
-   - **Small repo** (~100 files): Run a single agent per cluster (test files, documentation, implementation).
-   - **Large repo** (1000+ files): Fan out agents to avoid context overload. Disperse input across multiple agents per cluster, let them surface capability headers independently, then de-duplicate and merge synthetically.
+3. **Decide clustering,** using the inventory's file counts as the size signal:
+   - **Small repo:** a single agent (or the current session) reads everything directly — tests, docs, then implementation, in that priority order — and drafts capability headers + requirement statements in one pass. Skip to step 6.
+   - **Large repo:** fan out across clusters, at minimum:
+     - **Directory clustering** — one agent per top-level module/directory.
+     - **Identifier/reference clustering** — group files by shared domain terms or identifiers they reference in common (grep-level co-occurrence is enough; this doesn't need a formal algorithm).
+     - **File-type clustering** — group by extension/language, useful when a repo mixes e.g. application code with infra-as-code or scripts that the other two axes might not naturally separate.
 
-## Output Format
+4. **Dispatch.** One agent per cluster per dimension, using your environment's task/subagent-spawning capability, each producing a fragment: candidate capability headers + requirement statements + provenance notes for its slice, in the format from [Output](#output). If your environment has no subagent-spawning capability, run each cluster's pass sequentially in the same session instead — slower, not skipped.
 
-Write `REQUIREMENTS.md` using the same document grammar `trace-requirements` produces, so a repo can adopt that skill afterward without reformatting:
+5. **Synthesize.** If step 4 ran, a merge pass is required before anything is written: reconcile all cluster fragments into one coherent draft — dedupe capabilities and requirements that showed up under more than one clustering axis, unify colliding ID prefixes (a directory-cluster and an identifier-cluster will independently invent their own), and apply the same "surface, don't resolve" rule from [Non-negotiables](#non-negotiables) to genuine disagreements between clusters. If step 3 skipped straight to a single pass, there's nothing to merge — proceed straight to writing.
+
+6. **Write `REQUIREMENTS.md`** in the format below, then run the checker as a sanity pass:
+
+   ```sh
+   node <path-to-trace-requirements-skill>/scripts/check-traces.mjs --progress --doc REQUIREMENTS.md <tests-dir>...
+   ```
+
+   `--progress` never fails the run; it just reports what did and didn't resolve, so malformed trace lines or title mismatches surface before the user ever opens the file.
+
+## Output
+
+Write in the same grammar `trace-requirements` uses (`## N. {Section Name} ({PREFIX})` headers, `⇒ file :: "title"` trace lines — see that skill for the full document skeleton) with these extraction-specific conventions:
+
+- **Every requirement is `[PROPOSED]`.** Nothing extracted is a confirmed decision — reuse the existing status token rather than inventing a new one, so `check-traces.mjs` and `audit-requirement-traces` treat it the same as any other proposed requirement.
+- **Provenance note** on each requirement: append where it came from, e.g. `(derived from tests)`, `(derived from docs)`, `(derived from implementation, untested)`. Plain text, not a formal token.
+- **ID prefixes are candidates.** Auto-generate a mnemonic per section and move on — don't pause the run to negotiate a prefix with the user. Nothing downstream references these IDs yet, so renaming during review is cheap.
+- **"Disagreements" section** at the end, before "Needs documentation": every case where sources conflicted — a doc describing a capability with no matching test, a test asserting something no doc mentions, implementation contradicting a doc's claim, or two clusters disagreeing at the synthesis step. State what each source claims; don't pick a winner.
+- **"Needs documentation" section** at the end, alongside the standard "Out of scope" section: every capability header that had to be derived from tests or implementation instead of docs is listed as a follow-up backlog item, not folded silently into the numbered sections.
 
 ```md
-## 1. {Section Name} ({PREFIX})
+## N. {Section Name} ({PREFIX})
 
 - **{PREFIX}-1 [PROPOSED]** — The application must {single observable behavior}.
   ⇒ `{test file} :: "{existing, non-normative test title}"` (derived from tests)
-```
 
-- `PREFIX-N` for top-level requirements, `PREFIX-N.M` for one level of refinement — same ID scheme as `trace-requirements`. Prefixes are candidates: auto-generate a mnemonic per section and move on, don't pause the run to negotiate one with the user.
-- **Every requirement is `[PROPOSED]`.** Nothing extracted is a confirmed decision — reuse the existing status token rather than inventing a new one, so `check-traces.mjs` and `audit-requirement-traces` won't choke on an unrecognized tag.
-- **Trace line** — `⇒ \`path/to/file :: "exact, existing test title"\``. Point at the test's real title verbatim; never invent or normalize one.
-- **Derivation note** — append where the requirement came from, e.g. `(derived from tests)`, `(derived from docs)`, `(derived from implementation, untested)`. Plain text, not a formal token.
+## Disagreements
 
-## Needs documentation
+- {What source A claims} vs. {what source B claims}, re: {capability}. (`{files involved}`)
 
-At the end of the draft, alongside the standard "Out of scope" section, list every capability header that had to be derived from tests or implementation instead of docs — i.e. nothing documents it. This is a follow-up backlog item, not something to silently fold into the numbered sections:
-
-```md
 ## Needs documentation
 
 - **{PREFIX}** ({Section Name}) — no documentation found; header derived from {test groupings|implementation structure} in `{paths}`.
 ```
 
-## Non-Negotiables
+## Non-negotiables
 
-- **Never rewrite test titles.** Trace lines point at existing test title, not invented. Normalizing test titles is a user-ask step — not this job.
-
-- **Never silently resolve a disagreement** between sources — surface it at the end, alongside the standard "Out of Scope" section. Every capability header that had to be derived from tests or implementation (rather than doc) describes a capability with an observable external effect — not every internal function. Skip anything already captured from the test pass.
+- **Never rewrite test titles.** Trace lines point at existing, non-normative titles as-is. Normalizing titles to be ID-first is a separate, explicitly-invoked follow-up — not part of this pass.
+- **Never silently resolve a disagreement.** A doc describing a capability with no matching test, a test asserting something no doc mentions, implementation contradicting a doc's claim, or two clusters disagreeing at the synthesis step — all get surfaced explicitly for the user to resolve (see the "Disagreements" section in [Output](#output)). These disagreements are usually the most valuable finding of the whole exercise; don't bury them by picking a winner.
+- **Never touch an existing populated `REQUIREMENTS.md`.** This skill only bootstraps from nothing.
