@@ -50,23 +50,29 @@ node inventory-sources.mjs [path]
 
 ## Output Format
 
-Output **as** **trace-requirements** (see that skill's `FORMAT.md` for the full ID scheme) with these extraction-specific conversions:
+Write `REQUIREMENTS.md` using the same document grammar `trace-requirements` produces, so a repo can adopt that skill afterward without reformatting:
 
-- **Every requirement is `[PROPOSED]`** — Nothing extracted is a confirmed decision. Reuse the existing status token rather than inventing a new one, so check-traces.js and audit-requirement-traces won't pick up mismatches or title mismatches surface before the user ever opens the file.
+```md
+## 1. {Section Name} ({PREFIX})
 
-- **Derivation notes** — For each requirement, append where it came from, e.g. `(derived from tests)`, `(derived from docs)`, `(derived from implementation, untested)`. Plain text, not a format.
+- **{PREFIX}-1 [PROPOSED]** — The application must {single observable behavior}.
+  ⇒ `{test file} :: "{existing, non-normative test title}"` (derived from tests)
+```
 
-## Needs Documentation
+- `PREFIX-N` for top-level requirements, `PREFIX-N.M` for one level of refinement — same ID scheme as `trace-requirements`. Prefixes are candidates: auto-generate a mnemonic per section and move on, don't pause the run to negotiate one with the user.
+- **Every requirement is `[PROPOSED]`.** Nothing extracted is a confirmed decision — reuse the existing status token rather than inventing a new one, so `check-traces.mjs` and `audit-requirement-traces` won't choke on an unrecognized tag.
+- **Trace line** — `⇒ \`path/to/file :: "exact, existing test title"\``. Point at the test's real title verbatim; never invent or normalize one.
+- **Derivation note** — append where the requirement came from, e.g. `(derived from tests)`, `(derived from docs)`, `(derived from implementation, untested)`. Plain text, not a formal token.
 
-- `[PROPOSED]` ← ((Section Name)) — no documentation found; header derived from (test groupings)|(implementation structure) in (paths).
+## Needs documentation
 
-## Needs Tests
+At the end of the draft, alongside the standard "Out of scope" section, list every capability header that had to be derived from tests or implementation instead of docs — i.e. nothing documents it. This is a follow-up backlog item, not something to silently fold into the numbered sections:
 
-- `[PROPOSED]` ← ((Section Name)) — (Existing, non-normative test title).
+```md
+## Needs documentation
 
-## Needs Design
-
-- `[PROPOSED]` ← no documentation found; list the numbered sections. It's an actionable finding, not just a disagreement between sources.
+- **{PREFIX}** ({Section Name}) — no documentation found; header derived from {test groupings|implementation structure} in `{paths}`.
+```
 
 ## Non-Negotiables
 
