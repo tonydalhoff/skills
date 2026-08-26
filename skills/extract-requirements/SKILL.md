@@ -27,7 +27,7 @@ Three sources, three jobs. Don't blur them — a rule mismatch is how the draft 
 
 - **Test files**. Don't blur these — a rule mismatch is how the draft ends up muddly.
 - **Documentation** (readme, ~i.test). These derive the implementation, use judgment — skip anything already captured from the test pass.
-- **Implementation** (~*.{js,ts,go,rs}, etc). This is for the edge case: test title or feature is conspicuously absent, or test coverage is weak. Exorcise existing test coverage; skip to validation and business-logic with an observable external effect — not every internal function. Skip anything already captured from the test pass.
+- **Implementation** (~*.{js,ts,go,rs}, etc). This is for the edge case: test title or feature is conspicuously absent, or test coverage is weak. Exercise existing test coverage; skip to validation and business-logic with an observable external effect — not every internal function. Skip anything already captured from the test pass.
 
 ## Workflow
 
@@ -42,9 +42,7 @@ node inventory-sources.mjs [path]
 - `path` defaults to the repo root; pass a subdirectory to scope a run to one module of a large monorepo.
 - Output is JSON; file counts by role (test/doc/other) and an extension breakdown.
 
-3. **Progress** — `--progress` never fails the run; it just reports what did and didn't resolve, so trailformed trace lines or title mismatches surface before the user ever opens the file.
-
-4. **Decide clustering** — Parse that output to decide single-agent vs multi-agent clustering:
+3. **Decide clustering** — Parse that output to decide single-agent vs multi-agent clustering:
    - **Small repo** (~100 files): Run a single agent per cluster (test files, documentation, implementation).
    - **Large repo** (1000+ files): Fan out agents to avoid context overload. Disperse input across multiple agents per cluster, let them surface capability headers independently, then de-duplicate and merge synthetically.
 

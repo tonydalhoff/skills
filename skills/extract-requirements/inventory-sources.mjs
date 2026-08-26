@@ -38,7 +38,7 @@ const walk = (dir) => {
       continue;
     }
     if (st.isDirectory()) {
-      if (SKIP_DIRS.has(name) || (name.startsWith('.') && name !== '.')) continue;
+      if (SKIP_DIRS.has(name) || name.startsWith('.')) continue;
       walk(p);
     } else {
       files.push(p);
@@ -60,13 +60,10 @@ for (const f of files) {
   const isUnderDocsDir = /(^|\/)docs?\//.test(rel);
   const isReadme = /^readme/i.test(name);
 
-  let category = 'other';
   if (TEST_NAME_RE.test(name) || (isUnderTestsDir && !DOC_EXT_RE.test(name))) {
     testFiles.push(rel);
-    category = 'test';
-  } else if (isReadme || (DOC_EXT_RE.test(name) && (isUnderDocsDir || isReadme))) {
+  } else if (isReadme || (DOC_EXT_RE.test(name) && isUnderDocsDir)) {
     docFiles.push(rel);
-    category = 'doc';
   } else {
     otherFiles.push(rel);
   }
